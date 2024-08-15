@@ -1,0 +1,151 @@
+USE hw_03;
+
+-- 3. Перейдіть до бази даних, з якою працювали у темі 3. Напишіть запит за допомогою операторів FROM та INNER JOIN, що об’єднує всі таблиці даних, які ми завантажили з файлів: 
+-- order_details, orders, customers, products, categories, employees, shippers, suppliers. Для цього ви маєте знайти спільні ключі.
+
+SELECT order_details.*, 
+orders.customer_id,
+orders.employee_id,
+orders.date, 
+orders.shipper_id,
+products.name AS product_name, 
+products.supplier_id, 
+products.category_id, 
+customers.name AS customer_name, 
+employees.last_name AS employees_name, 
+shippers.name AS shippers_name,
+categories.name AS categories_name,
+suppliers.name AS suppliers_name
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id;
+
+-- 4. Виконайте запити, перелічені нижче.
+
+-- 1) Визначте, скільки рядків ви отримали (за допомогою оператора COUNT).
+
+SELECT COUNT(order_details.id)
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id;
+    
+-- Відповідь: 518
+
+-- 2) Змініть декілька операторів INNER на LEFT чи RIGHT. Визначте, що відбувається з кількістю рядків. Чому? Напишіть відповідь у текстовому файлі.
+
+SELECT COUNT(order_details.id)
+FROM order_details 
+	RIGHT JOIN orders ON order_details.order_id = orders.id
+    RIGHT JOIN products ON order_details.product_id = products.id
+    LEFT JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    RIGHT JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    LEFT JOIN suppliers ON products.supplier_id = suppliers.id;
+   
+-- Відповідь: кількість рядків залишилась такою ж як і була (518), бо в таблицях нема неспівпадінь по ключам.
+
+-- 3) Оберіть тільки ті рядки, де employee_id > 3 та ≤ 10.
+
+SELECT order_details.*, 
+orders.customer_id,
+orders.employee_id,
+orders.date, 
+orders.shipper_id,
+products.name AS product_name, 
+products.supplier_id, 
+products.category_id, 
+customers.name AS customer_name, 
+employees.last_name AS employees_name, 
+shippers.name AS shippers_name,
+categories.name AS categories_name,
+suppliers.name AS suppliers_name
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE orders.employee_id > 3 AND orders.employee_id <= 10;
+
+-- 4) Згрупуйте за іменем категорії, порахуйте кількість рядків у групі, середню кількість товару (кількість товару знаходиться в order_details.quantity)
+
+SELECT categories.name AS categories_name,
+COUNT(order_details.id) AS row_count, 
+AVG(order_details.quantity) AS average_quantity
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE orders.employee_id > 3 AND orders.employee_id <= 10
+GROUP BY categories_name;
+
+-- 5) Відфільтруйте рядки, де середня кількість товару більша за 21.
+
+SELECT categories.name AS categories_name,
+COUNT(order_details.id) AS row_count, 
+AVG(order_details.quantity) AS average_quantity
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE orders.employee_id > 3 AND orders.employee_id <= 10
+GROUP BY categories_name
+HAVING average_quantity > 21;
+
+-- 6) Відсортуйте рядки за спаданням кількості рядків.
+
+SELECT categories.name AS categories_name,
+COUNT(order_details.id) AS row_count, 
+AVG(order_details.quantity) AS average_quantity
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE orders.employee_id > 3 AND orders.employee_id <= 10
+GROUP BY categories_name
+HAVING average_quantity > 21
+ORDER BY row_count DESC;
+
+-- 7) Виведіть на екран (оберіть) чотири рядки з пропущеним першим рядком.
+
+SELECT categories.name AS categories_name,
+COUNT(order_details.id) AS row_count, 
+AVG(order_details.quantity) AS average_quantity
+FROM order_details 
+	INNER JOIN orders ON order_details.order_id = orders.id
+    INNER JOIN products ON order_details.product_id = products.id
+    INNER JOIN customers ON orders.customer_id = customers.id
+    INNER JOIN employees ON orders.employee_id = employees.employee_id
+    INNER JOIN shippers ON orders.shipper_id = shippers.id
+    INNER JOIN categories ON products.category_id = categories.id
+    INNER JOIN suppliers ON products.supplier_id = suppliers.id
+WHERE orders.employee_id > 3 AND orders.employee_id <= 10
+GROUP BY categories_name
+HAVING average_quantity > 21
+ORDER BY row_count DESC
+LIMIT 4 OFFSET 1;
